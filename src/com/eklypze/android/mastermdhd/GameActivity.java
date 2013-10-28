@@ -21,6 +21,7 @@ import org.andengine.entity.modifier.AlphaModifier;
 import org.andengine.entity.modifier.LoopEntityModifier;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.scene.background.Background;
+import org.andengine.entity.scene.background.SpriteBackground;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.font.Font;
@@ -49,12 +50,15 @@ public class GameActivity extends BaseGameActivity {
 	BitmapTextureAtlas ballTexture, pegTexture;
 	BitmapTextureAtlas winTexture;
 	BitmapTextureAtlas loseTexture;
+	BitmapTextureAtlas bgTexture; // background textures
+	TextureRegion bgTextureRegion;
 	// ballTextureRegionArray: 0=red 1=blue 2=green 3=purple 4=yellow 5=orange
 	// 6=black 7=white 8="select"
 	TextureRegion[] ballTextureRegionArray = new TextureRegion[9];
 	TextureRegion[] pegTextureRegionArray = new TextureRegion[12];
 	TextureRegion[] loseTextureRegionArray = new TextureRegion[2];
 	Sprite[] panel = new Sprite[8]; // selection panel
+    Sprite bgSprite; // background sprite
 	String[] ballColours = { "Red", "Blue", "Green", "Purple", "Yellow",
 			"Orange", "Black", "White" };
 	/* GAME OPTIONS */
@@ -110,6 +114,15 @@ public class GameActivity extends BaseGameActivity {
 	private void loadGfx() {
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
 
+		/* *
+		 * CREATE BACKGROUND TEXTURE
+		 */
+		bgTexture = new BitmapTextureAtlas(getTextureManager(), 480, 800);
+        bgTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(bgTexture, this, "wood_bg.jpg", 0, 0);
+        bgSprite = new Sprite(0, 0, bgTextureRegion, getVertexBufferObjectManager()); // create sprite to set background
+        
+        bgTexture.load(); // load bgTexture to the scene
+        
 		/* *
 		 * CREATE SPRITE SHEET FOR COLOURED BALLS
 		 * Width: 1x64px = 64px
@@ -214,10 +227,9 @@ public class GameActivity extends BaseGameActivity {
 	 ***************************/
 	public void onCreateScene(OnCreateSceneCallback pOnCreateSceneCallback)
 			throws Exception {
-		// create scene with grey background
+		// create scene with bgSprite background
 		this.scene = new Scene();
-		this.scene.setBackground(new Background((70f / 255), (70f / 255),
-				(81f / 255)));
+		this.scene.setBackground(new SpriteBackground(bgSprite));
 		// load fonts
 		this.mFontTexture = new BitmapTextureAtlas(getTextureManager(), 256,
 				256, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
