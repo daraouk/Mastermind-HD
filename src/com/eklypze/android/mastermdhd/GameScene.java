@@ -13,32 +13,27 @@ import java.util.Random;
 
 import javax.microedition.khronos.opengles.GL10;
 
-import org.andengine.engine.camera.Camera;
-import org.andengine.engine.options.EngineOptions;
-import org.andengine.engine.options.ScreenOrientation;
-import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 import org.andengine.entity.modifier.AlphaModifier;
 import org.andengine.entity.modifier.LoopEntityModifier;
 import org.andengine.entity.scene.Scene;
-import org.andengine.entity.scene.background.Background;
 import org.andengine.entity.scene.background.SpriteBackground;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.font.Font;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
-import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.TextureRegion;
-import org.andengine.ui.activity.BaseGameActivity;
 import org.andengine.util.color.Color;
 
 import android.graphics.Typeface;
 import android.util.Log;
 
-public class GameActivity extends BaseGameActivity {
+public class GameScene extends Scene {
 	/***************************
 	 * DECLARATIONS
 	 ***************************/
+	public BaseActivity act;
+
 	Scene scene;
 	/* CAMERA */
 	protected static final int CAMERA_WIDTH = 480;
@@ -58,7 +53,7 @@ public class GameActivity extends BaseGameActivity {
 	TextureRegion[] pegTextureRegionArray = new TextureRegion[12];
 	TextureRegion[] loseTextureRegionArray = new TextureRegion[2];
 	Sprite[] panel = new Sprite[8]; // selection panel
-    Sprite bgSprite; // background sprite
+	Sprite bgSprite; // background sprite
 	String[] ballColours = { "Red", "Blue", "Green", "Purple", "Yellow",
 			"Orange", "Black", "White" };
 	/* GAME OPTIONS */
@@ -80,118 +75,26 @@ public class GameActivity extends BaseGameActivity {
 	// dummy variable when drawing panel for touch *don't delete*
 	private int z = 0;
 
-	@Override
-	/***************************
-	 * onCreateEngineOptions
-	 ***************************/
-	public EngineOptions onCreateEngineOptions() {
-		Camera mCamera = new Camera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
-		// RatioResolutionPolicy is for scaling for different devices
-		EngineOptions options = new EngineOptions(true,
-				ScreenOrientation.PORTRAIT_FIXED, new RatioResolutionPolicy(
-						CAMERA_WIDTH, CAMERA_HEIGHT), mCamera);
-		return options;
-	}
-
-	@Override
 	/***************************
 	 * onCreateResources 
 	 ***************************/
-	public void onCreateResources(
-			OnCreateResourcesCallback pOnCreateResourcesCallback)
-			throws Exception {
+	public GameScene() {
 		// STEP 1: Load Graphics
-		loadGfx();
+
 		// STEP 2: Start a New Game
 		newGame();
-		// callback once done loading resources
-		pOnCreateResourcesCallback.onCreateResourcesFinished();
-	}
 
-	/*============================
-	 * LOAD GRAPHICS 
-	 *===========================*/
-	private void loadGfx() {
-		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
+		// create scene with bgSprite background
+		setBackground(new SpriteBackground(bgSprite));
+		// load fonts
+		this.mFontTexture = new BitmapTextureAtlas(act.getTextureManager(),
+				256, 256, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
+		this.mFont = new Font(act.getFontManager(), this.mFontTexture,
+				Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 20, true,
+				Color.WHITE);
 
-		/* *
-		 * CREATE BACKGROUND TEXTURE
-		 */
-		bgTexture = new BitmapTextureAtlas(getTextureManager(), 480, 800);
-        bgTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(bgTexture, this, "wood_bg.jpg", 0, 0);
-        bgSprite = new Sprite(0, 0, bgTextureRegion, getVertexBufferObjectManager()); // create sprite to set background
-        
-        bgTexture.load(); // load bgTexture to the scene
-        
-		/* *
-		 * CREATE SPRITE SHEET FOR COLOURED BALLS
-		 * Width: 1x64px = 64px
-		 * Height: 9x64px = 576px
-		 * BitmapTextureAtlas: must use 2^x value for the width and height
-		 * */
-		ballTexture = new BitmapTextureAtlas(getTextureManager(), 64, 576);
-
-		ballTextureRegionArray[0] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(ballTexture, this, "red_ball.png", 0, 0);
-		ballTextureRegionArray[1] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(ballTexture, this, "blue_ball.png", 0, 64);
-		ballTextureRegionArray[2] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(ballTexture, this, "green_ball.png", 0, 128);
-		ballTextureRegionArray[3] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(ballTexture, this, "purple_ball.png", 0, 192);
-		ballTextureRegionArray[4] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(ballTexture, this, "yellow_ball.png", 0, 256);
-		ballTextureRegionArray[5] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(ballTexture, this, "orange_ball.png", 0, 320);
-		ballTextureRegionArray[6] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(ballTexture, this, "black_ball.png", 0, 384);
-		ballTextureRegionArray[7] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(ballTexture, this, "white_ball.png", 0, 448);
-		ballTextureRegionArray[8] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(ballTexture, this, "select_ball.png", 0, 512);
-
-		ballTexture.load(); // load ballTexture to the scene
-
-		/* *
-		 * CREATE SPRITE SHEET FOR BLACK & WHITE PEGS
-		 * Width: 1x64px = 64px
-		 * Height: 12x64px = 768px
-		 * */
-		pegTexture = new BitmapTextureAtlas(getTextureManager(), 64, 768);
-
-		pegTextureRegionArray[0] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(pegTexture, this, "peg_1B.png", 0, 0);
-		pegTextureRegionArray[1] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(pegTexture, this, "peg_1B2W.png", 0, 64);
-		pegTextureRegionArray[2] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(pegTexture, this, "peg_1B3W.png", 0, 128);
-		pegTextureRegionArray[3] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(pegTexture, this, "peg_1W.png", 0, 192);
-		pegTextureRegionArray[4] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(pegTexture, this, "peg_2B.png", 0, 256);
-		pegTextureRegionArray[5] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(pegTexture, this, "peg_2B2W.png", 0, 320);
-		pegTextureRegionArray[6] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(pegTexture, this, "peg_2W.png", 0, 384);
-		pegTextureRegionArray[7] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(pegTexture, this, "peg_3B.png", 0, 448);
-		pegTextureRegionArray[8] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(pegTexture, this, "peg_3B1W.png", 0, 512);
-		pegTextureRegionArray[9] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(pegTexture, this, "peg_3W.png", 0, 576);
-		pegTextureRegionArray[10] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(pegTexture, this, "peg_4B.png", 0, 640);
-		pegTextureRegionArray[11] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(pegTexture, this, "peg_4W.png", 0, 704);
-
-		pegTexture.load(); // load pegTexture to the scene
-
-		/* CREATE SPRITE SHEET FOR GAME OVER (LOSE) */
-		loseTexture = new BitmapTextureAtlas(getTextureManager(), 512, 256);
-		loseTextureRegionArray[0] = BitmapTextureAtlasTextureRegionFactory
-				.createFromAsset(loseTexture, this, "gameover_lose.png", 0, 0);
-
-		loseTexture.load(); // load gameOverTexture to the scene
+		// STEP 3: Draw Panel
+		drawPanel();
 	}
 
 	/*============================
@@ -221,37 +124,6 @@ public class GameActivity extends BaseGameActivity {
 		codeCopy = code.clone(); // copies code array for white/black peg use
 	}
 
-	@Override
-	/***************************
-	 * onCreateScene 
-	 ***************************/
-	public void onCreateScene(OnCreateSceneCallback pOnCreateSceneCallback)
-			throws Exception {
-		// create scene with bgSprite background
-		this.scene = new Scene();
-		this.scene.setBackground(new SpriteBackground(bgSprite));
-		// load fonts
-		this.mFontTexture = new BitmapTextureAtlas(getTextureManager(), 256,
-				256, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
-		this.mFont = new Font(getFontManager(), this.mFontTexture,
-				Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 20, true,
-				Color.WHITE);
-		// callback once done creating scene
-		pOnCreateSceneCallback.onCreateSceneFinished(this.scene);
-	}
-
-	@Override
-	/***************************
-	 * onPopulateScene 
-	 ***************************/
-	public void onPopulateScene(Scene pScene,
-			OnPopulateSceneCallback pOnPopulateSceneCallback) throws Exception {
-		// STEP 3: Draw Panel
-		drawPanel();
-		// callback once done populating scene
-		pOnPopulateSceneCallback.onPopulateSceneFinished();
-	}
-
 	/*============================
 	 * DRAW PANEL 
 	 *===========================*/
@@ -263,8 +135,8 @@ public class GameActivity extends BaseGameActivity {
 		for (int i = 0; i < 8; i++) {
 			final int j = i;
 			panel[i] = new Sprite(grid_xPixel(column), grid_yPixel(rowStart),
-					ballTextureRegionArray[i],
-					this.mEngine.getVertexBufferObjectManager()) {
+					ballTextureRegionArray[i], act.getEngine()
+							.getVertexBufferObjectManager()) {
 				@Override
 				/* [START] Touch Detection */
 				public boolean onAreaTouched(TouchEvent pSceneTouchEvent,
@@ -296,11 +168,11 @@ public class GameActivity extends BaseGameActivity {
 				}
 				/* [END] Touch Detection */
 			};
-			this.scene.registerTouchArea(panel[i]);
-			this.scene.attachChild(panel[i]);
+			registerTouchArea(panel[i]);
+			attachChild(panel[i]);
 			rowStart++;
 		} /* [END] Draw Selection Panel */
-		this.scene.setTouchAreaBindingOnActionDownEnabled(true);
+		setTouchAreaBindingOnActionDownEnabled(true);
 	}
 
 	/*============================
@@ -309,7 +181,7 @@ public class GameActivity extends BaseGameActivity {
 	private void makeMove(int inColor) {
 		boardPieces[turn] = new Sprite(grid_xPixel(currentX),
 				grid_yPixelboard(currentY), ballTextureRegionArray[inColor],
-				this.mEngine.getVertexBufferObjectManager());
+				act.getEngine().getVertexBufferObjectManager());
 		boardPieces[turn].setScale(0.75f); // set 75% size on board
 
 		// store current line, compare values to code and generate B/W pegs
@@ -333,7 +205,7 @@ public class GameActivity extends BaseGameActivity {
 		Log.v("pegs", "whitePegs: " + whitePegs);
 
 		// Draw pieces to scene and advance to next turn & column
-		this.scene.attachChild(boardPieces[turn]);
+		attachChild(boardPieces[turn]);
 		currentX++;
 		turn++;
 
@@ -357,15 +229,15 @@ public class GameActivity extends BaseGameActivity {
 
 		/* [START] Draw Blinking Cursor in Next Spot */
 		nextSpot = new Sprite(grid_xPixel(currentX),
-				grid_yPixelboard(currentY), ballTextureRegionArray[8],
-				this.mEngine.getVertexBufferObjectManager());
+				grid_yPixelboard(currentY), ballTextureRegionArray[8], act
+						.getEngine().getVertexBufferObjectManager());
 		nextSpot.setScale(0.75f);
 
 		nextSpot.setBlendFunction(GL10.GL_SRC_ALPHA,
 				GL10.GL_ONE_MINUS_SRC_ALPHA);
 		nextSpot.registerEntityModifier(new LoopEntityModifier(
 				new AlphaModifier(2, 0f, 1.0f)));
-		this.scene.attachChild(nextSpot);
+		attachChild(nextSpot);
 		/* [END] Draw Blinking Cursor in Next Spot */
 
 		// =================== UNUSED CODE ===================
@@ -385,9 +257,9 @@ public class GameActivity extends BaseGameActivity {
 			GameOverWin(false);
 			Log.v("Game Over", "You Lose");
 			gameoverLose = new Sprite(CAMERA_WIDTH / 2 - 256,
-					CAMERA_HEIGHT / 2 - 64, loseTextureRegionArray[0],
-					this.mEngine.getVertexBufferObjectManager());
-			this.scene.attachChild(gameoverLose);
+					CAMERA_HEIGHT / 2 - 64, loseTextureRegionArray[0], act
+							.getEngine().getVertexBufferObjectManager());
+			scene.attachChild(gameoverLose);
 		}
 	}
 
@@ -438,10 +310,10 @@ public class GameActivity extends BaseGameActivity {
 			// use pegScore to display corresponding image
 			bwPegs[turn2] = new Sprite(grid_xPixel(5),
 					grid_yPixelboard(currentY + 1),
-					pegTextureRegionArray[pegScore],
-					this.mEngine.getVertexBufferObjectManager());
+					pegTextureRegionArray[pegScore], act.getEngine()
+							.getVertexBufferObjectManager());
 			bwPegs[turn2].setScale(0.80f);
-			this.scene.attachChild(bwPegs[turn2]);
+			attachChild(bwPegs[turn2]);
 		}
 	}
 
