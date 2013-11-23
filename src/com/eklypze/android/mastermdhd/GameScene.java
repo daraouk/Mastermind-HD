@@ -23,12 +23,14 @@ import org.andengine.opengl.font.Font;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.region.TextureRegion;
-import org.andengine.util.color.Color;
+import org.andengine.util.adt.color.Color;
+
+import com.eklypze.android.mastermdhd.SceneManager.SceneType;
 
 import android.graphics.Typeface;
 import android.util.Log;
 
-public class GameScene extends Scene {
+public class GameScene extends BaseScene {
 	/***************************
 	 * DECLARATIONS
 	 ***************************/
@@ -75,28 +77,34 @@ public class GameScene extends Scene {
 	// dummy variable when drawing panel for touch *don't delete*
 	private int z = 0;
 
-	/***************************
-	 * onCreateResources 
-	 ***************************/
-	public GameScene() {
-		// STEP 1: Load Graphics
 
-		// STEP 2: Start a New Game
+	@Override
+	public void createScene() {
+		// STEP 1: Start a New Game
 		newGame();
-
 		// create scene with bgSprite background
 		setBackground(new SpriteBackground(bgSprite));
-		// load fonts
-		this.mFontTexture = new BitmapTextureAtlas(act.getTextureManager(),
-				256, 256, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
-		this.mFont = new Font(act.getFontManager(), this.mFontTexture,
-				Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 20, true,
-				Color.WHITE);
-
-		// STEP 3: Draw Panel
+		// STEP 2: Draw Panel
 		drawPanel();
+		
 	}
 
+	@Override
+	public void onBackKeyPressed() {
+	    System.exit(0);
+	}
+
+	@Override
+	public SceneType getSceneType() {
+		return SceneType.SCENE_GAME;
+	}
+
+	@Override
+	public void disposeScene() {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	/*============================
 	 * START A NEW GAME 
 	 *===========================*/
