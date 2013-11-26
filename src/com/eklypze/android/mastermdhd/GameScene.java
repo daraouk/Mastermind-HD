@@ -15,28 +15,21 @@ import javax.microedition.khronos.opengles.GL10;
 
 import org.andengine.entity.modifier.AlphaModifier;
 import org.andengine.entity.modifier.LoopEntityModifier;
-import org.andengine.entity.scene.Scene;
 import org.andengine.entity.scene.background.SpriteBackground;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.font.Font;
-import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.region.TextureRegion;
-import org.andengine.util.adt.color.Color;
+
+import android.util.Log;
 
 import com.eklypze.android.mastermdhd.SceneManager.SceneType;
-
-import android.graphics.Typeface;
-import android.util.Log;
 
 public class GameScene extends BaseScene {
 	/***************************
 	 * DECLARATIONS
 	 ***************************/
-	public BaseActivity act;
-
-	Scene scene;
 	/* CAMERA */
 	protected static final int CAMERA_WIDTH = 480;
 	protected static final int CAMERA_HEIGHT = 800;
@@ -77,7 +70,6 @@ public class GameScene extends BaseScene {
 	// dummy variable when drawing panel for touch *don't delete*
 	private int z = 0;
 
-
 	@Override
 	public void createScene() {
 		// STEP 1: Start a New Game
@@ -86,12 +78,12 @@ public class GameScene extends BaseScene {
 		setBackground(new SpriteBackground(bgSprite));
 		// STEP 2: Draw Panel
 		drawPanel();
-		
+
 	}
 
 	@Override
 	public void onBackKeyPressed() {
-	    System.exit(0);
+		System.exit(0);
 	}
 
 	@Override
@@ -102,9 +94,9 @@ public class GameScene extends BaseScene {
 	@Override
 	public void disposeScene() {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
+
 	/*============================
 	 * START A NEW GAME 
 	 *===========================*/
@@ -143,8 +135,7 @@ public class GameScene extends BaseScene {
 		for (int i = 0; i < 8; i++) {
 			final int j = i;
 			panel[i] = new Sprite(grid_xPixel(column), grid_yPixel(rowStart),
-					ballTextureRegionArray[i], act.getEngine()
-							.getVertexBufferObjectManager()) {
+					ballTextureRegionArray[i], vbom) {
 				@Override
 				/* [START] Touch Detection */
 				public boolean onAreaTouched(TouchEvent pSceneTouchEvent,
@@ -189,7 +180,7 @@ public class GameScene extends BaseScene {
 	private void makeMove(int inColor) {
 		boardPieces[turn] = new Sprite(grid_xPixel(currentX),
 				grid_yPixelboard(currentY), ballTextureRegionArray[inColor],
-				act.getEngine().getVertexBufferObjectManager());
+				vbom);
 		boardPieces[turn].setScale(0.75f); // set 75% size on board
 
 		// store current line, compare values to code and generate B/W pegs
@@ -237,8 +228,7 @@ public class GameScene extends BaseScene {
 
 		/* [START] Draw Blinking Cursor in Next Spot */
 		nextSpot = new Sprite(grid_xPixel(currentX),
-				grid_yPixelboard(currentY), ballTextureRegionArray[8], act
-						.getEngine().getVertexBufferObjectManager());
+				grid_yPixelboard(currentY), ballTextureRegionArray[8], vbom);
 		nextSpot.setScale(0.75f);
 
 		nextSpot.setBlendFunction(GL10.GL_SRC_ALPHA,
@@ -265,9 +255,8 @@ public class GameScene extends BaseScene {
 			GameOverWin(false);
 			Log.v("Game Over", "You Lose");
 			gameoverLose = new Sprite(CAMERA_WIDTH / 2 - 256,
-					CAMERA_HEIGHT / 2 - 64, loseTextureRegionArray[0], act
-							.getEngine().getVertexBufferObjectManager());
-			scene.attachChild(gameoverLose);
+					CAMERA_HEIGHT / 2 - 64, loseTextureRegionArray[0], vbom);
+			attachChild(gameoverLose);
 		}
 	}
 
@@ -276,7 +265,7 @@ public class GameScene extends BaseScene {
 	 *===========================*/
 	private void GameOverWin(boolean win) {
 		// clear game
-		scene.detachChildren();
+		detachChildren();
 		turn = 0;
 
 	}
@@ -318,8 +307,7 @@ public class GameScene extends BaseScene {
 			// use pegScore to display corresponding image
 			bwPegs[turn2] = new Sprite(grid_xPixel(5),
 					grid_yPixelboard(currentY + 1),
-					pegTextureRegionArray[pegScore], act.getEngine()
-							.getVertexBufferObjectManager());
+					pegTextureRegionArray[pegScore], vbom);
 			bwPegs[turn2].setScale(0.80f);
 			attachChild(bwPegs[turn2]);
 		}

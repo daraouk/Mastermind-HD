@@ -36,15 +36,14 @@ public class BaseActivity extends BaseGameActivity {
 	private final int CAMERA_HEIGHT = 800;
 	
 	private ResourceManager resourceManager;
-	
-	@Override
+
 	/********************************
 	 * onCreateEngine()
-	 ********************************/
+	 ******************************
 	public Engine onCreateEngine(EngineOptions pEngineOptions) 
 	{
 	    return new LimitedFPSEngine(pEngineOptions, 60);
-	}
+	} **/
 	
 	@Override
 	/********************************
