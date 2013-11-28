@@ -17,43 +17,34 @@ import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 import org.andengine.entity.scene.Scene;
-import org.andengine.entity.sprite.Sprite;
-import org.andengine.opengl.font.Font;
-import org.andengine.opengl.texture.TextureOptions;
-import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
-import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
-import org.andengine.opengl.texture.region.ITextureRegion;
-import org.andengine.opengl.texture.region.TextureRegion;
-import org.andengine.opengl.util.GLState;
 import org.andengine.ui.activity.BaseGameActivity;
 
-import android.view.KeyEvent;
-
 public class BaseActivity extends BaseGameActivity {
-	/*** CAMERA ***/
-	private Camera camera;
+	/*** DECLARATIONS ***/
+	private Camera mCamera;
 	private final int CAMERA_WIDTH = 480;
 	private final int CAMERA_HEIGHT = 800;
-	
 	private ResourceManager resourceManager;
 
 	/********************************
 	 * onCreateEngine()
-	 ******************************
-	public Engine onCreateEngine(EngineOptions pEngineOptions) 
-	{
-	    return new LimitedFPSEngine(pEngineOptions, 60);
-	} **/
-	
+	 ********************************/
+	public Engine onCreateEngine(EngineOptions pEngineOptions) {
+		// limit FPS to 60 frames per second
+		return new LimitedFPSEngine(pEngineOptions, 60);
+	}
+
 	@Override
 	/********************************
 	 * onCreateEngineOptions()
 	 ********************************/
 	public EngineOptions onCreateEngineOptions() {
-		camera = new Camera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
+		// set camera & engine options
+		mCamera = new Camera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
 		EngineOptions engineOptions = new EngineOptions(true,
 				ScreenOrientation.PORTRAIT_FIXED, new RatioResolutionPolicy(
-						CAMERA_WIDTH, CAMERA_HEIGHT), camera);
+						CAMERA_WIDTH, CAMERA_HEIGHT), mCamera);
+
 		return engineOptions;
 	}
 
@@ -63,8 +54,12 @@ public class BaseActivity extends BaseGameActivity {
 	 ********************************/
 	public void onCreateResources(
 			OnCreateResourcesCallback pOnCreateResourcesCallback) {
-		ResourceManager.prepareManager(mEngine, this, camera, getVertexBufferObjectManager());
+		// initalize resourceManager class with necessary components
+		ResourceManager.prepareManager(mEngine, this, mCamera,
+				getVertexBufferObjectManager());
+		// share instance
 		resourceManager = ResourceManager.getInstance();
+
 		pOnCreateResourcesCallback.onCreateResourcesFinished();
 	}
 
@@ -73,6 +68,7 @@ public class BaseActivity extends BaseGameActivity {
 	 * onCreateScene()
 	 ********************************/
 	public void onCreateScene(OnCreateSceneCallback pOnCreateSceneCallback) {
+		// initialize the SplashScene and callback from within
 		SceneManager.getInstance().createSplashScene(pOnCreateSceneCallback);
 	}
 
@@ -82,19 +78,14 @@ public class BaseActivity extends BaseGameActivity {
 	 ********************************/
 	public void onPopulateScene(Scene pScene,
 			OnPopulateSceneCallback pOnPopulateSceneCallback) {
-	
-	    mEngine.registerUpdateHandler(new TimerHandler(2f, new ITimerCallback() 
-	    {
-	            public void onTimePassed(final TimerHandler pTimerHandler) 
-	            {
-	                mEngine.unregisterUpdateHandler(pTimerHandler);
-	                SceneManager.getInstance().createGameScene();
-	                // load menu resources, create menu scene
-	                // set menu scene using scene manager
-	                // disposeSplashScene();
-	                // READ NEXT ARTICLE FOR THIS PART.
-	            }
-	    }));
+		// set timer for splash to finish and then create the GameScene
+		mEngine.registerUpdateHandler(new TimerHandler(2f,
+				new ITimerCallback() {
+					public void onTimePassed(final TimerHandler pTimerHandler) {
+						mEngine.unregisterUpdateHandler(pTimerHandler);
+						SceneManager.getInstance().createGameScene();
+					}
+				}));
 
 		pOnPopulateSceneCallback.onPopulateSceneFinished();
 	}

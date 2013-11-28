@@ -15,44 +15,55 @@ import org.andengine.opengl.util.GLState;
 import com.eklypze.android.mastermdhd.SceneManager.SceneType;
 
 public class SplashScene extends BaseScene {
+	/*** DECLARATIONS ***/
 	private Sprite splash;
-	
-    @Override
-    public void createScene()
-    {
-    	splash = new Sprite(0, 0, resourceManager.splash_region, vbom)
-    	{
-    	    @Override
-    	    protected void preDraw(GLState pGLState, Camera pCamera) 
-    	    {
-    	       super.preDraw(pGLState, pCamera);
-    	       pGLState.enableDither();
-    	    }
-    	};
-    	        
-    	splash.setScale(1.5f);
-    	splash.setPosition(400, 240);
-    	attachChild(splash);
-    }
 
-    @Override
-    public void onBackKeyPressed()
-    {
+	/************************************
+	 * ------------INHERITED------------
+	 ************************************/
 
-    }
+	@Override
+	/********************************
+	 * createScene()
+	 ********************************/
+	public void createScene() {
+		splash = new Sprite(0, 0, resourceManager.splashRegion, vbom) {
+			@Override
+			protected void preDraw(GLState pGLState, Camera pCamera) {
+				super.preDraw(pGLState, pCamera);
+				pGLState.enableDither();
+			}
+		};
 
-    @Override
-    public SceneType getSceneType()
-    {
-    	return SceneType.SCENE_SPLASH;
-    }
+		splash.setScale(1.0f);
+		splash.setPosition(240, 400); // centers image... but why???
+		attachChild(splash);
+	}
 
-    @Override
-    public void disposeScene()
-    {
-        splash.detachSelf();
-        splash.dispose();
-        this.detachSelf();
-        this.dispose();
-    }
+	@Override
+	/********************************
+	 * createScene()
+	 ********************************/
+	public void onBackKeyPressed() {
+		System.exit(0);
+	}
+
+	@Override
+	/********************************
+	 * getSceneType()
+	 ********************************/
+	public SceneType getSceneType() {
+		return SceneType.SCENE_SPLASH;
+	}
+
+	@Override
+	/********************************
+	 * disposeScene()
+	 ********************************/
+	public void disposeScene() {
+		splash.detachSelf();
+		splash.dispose();
+		this.detachSelf();
+		this.dispose();
+	}
 }

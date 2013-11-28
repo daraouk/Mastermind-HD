@@ -12,41 +12,39 @@ import org.andengine.engine.Engine;
 import org.andengine.ui.IGameInterface.OnCreateSceneCallback;
 
 public class SceneManager {
-	//---------------------------------------------
-	// SCENES
-	//---------------------------------------------
-
+	/*** Scenes ***/
 	private BaseScene splashScene;
 	private BaseScene menuScene;
 	private BaseScene gameScene;
 	private BaseScene loadingScene;
-
-	//---------------------------------------------
-	// VARIABLES
-	//---------------------------------------------
-
+	/*** Settings ***/
 	private static final SceneManager INSTANCE = new SceneManager();
-
+	private Engine engine = ResourceManager.getInstance().eng;
+	private BaseScene currentScene;
+	// start with splash scene
 	private SceneType currentSceneType = SceneType.SCENE_SPLASH;
 
-	private BaseScene currentScene;
-
-	private Engine engine = ResourceManager.getInstance().engine;
-
+	/*** Scene Types ***/
 	public enum SceneType {
 		SCENE_SPLASH, SCENE_MENU, SCENE_GAME, SCENE_LOADING,
 	}
 
-	//---------------------------------------------
-	// CLASS LOGIC
-	//---------------------------------------------
+	/********************************
+	 * ---------CLASS LOGIC---------
+	 ********************************/
 
+	/********************************
+	 * setScene(BaseScene)
+	 ********************************/
 	public void setScene(BaseScene scene) {
 		engine.setScene(scene);
 		currentScene = scene;
 		currentSceneType = scene.getSceneType();
 	}
 
+	/********************************
+	 * setScene(SceneType)
+	 ********************************/
 	public void setScene(SceneType sceneType) {
 		switch (sceneType) {
 		case SCENE_MENU:
@@ -66,41 +64,61 @@ public class SceneManager {
 		}
 	}
 
-	//---------------------------------------------
-	// GETTERS AND SETTERS
-	//---------------------------------------------
+	/********************************
+	 * -----------GETTERS-----------
+	 ********************************/
 
+	/********************************
+	 * getInstance()
+	 ********************************/
 	public static SceneManager getInstance() {
 		return INSTANCE;
 	}
 
+	/********************************
+	 * getCurrentSceneType()
+	 ********************************/
 	public SceneType getCurrentSceneType() {
 		return currentSceneType;
 	}
 
+	/********************************
+	 * getCurrentScene()
+	 ********************************/
 	public BaseScene getCurrentScene() {
 		return currentScene;
 	}
 
-	/********** CREATE SCENES **************/
+	/********************************
+	 * -----------SETTERS-----------
+	 ********************************/
+
+	/********************************
+	 * createSplashScene()
+	 ********************************/
 	public void createSplashScene(OnCreateSceneCallback pOnCreateSceneCallback) {
 		ResourceManager.getInstance().loadSplashScreen();
 		splashScene = new SplashScene();
-		currentScene = splashScene;
+		setScene(splashScene);
 		pOnCreateSceneCallback.onCreateSceneFinished(splashScene);
 	}
 
+	/********************************
+	 * disposeSplashScene()
+	 ********************************/
 	private void disposeSplashScene() {
 		ResourceManager.getInstance().unloadSplashScreen();
 		splashScene.disposeScene();
 		splashScene = null;
 	}
-	
-	public void createGameScene()
-	{
-	    ResourceManager.getInstance().loadGameResources();
-	    gameScene = new GameScene();
-	    setScene(gameScene);
-	    disposeSplashScene();
+
+	/********************************
+	 * createGameScene()
+	 ********************************/
+	public void createGameScene() {
+		ResourceManager.getInstance().loadGameResources();
+		gameScene = new GameScene();
+		setScene(gameScene);
+		disposeSplashScene();
 	}
 }

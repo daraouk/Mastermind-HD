@@ -13,44 +13,44 @@ import org.andengine.engine.camera.Camera;
 import org.andengine.entity.scene.Scene;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
-import com.eklypze.android.mastermdhd.SceneManager.SceneType;
-
 import android.app.Activity;
 
+import com.eklypze.android.mastermdhd.SceneManager.SceneType;
+
 public abstract class BaseScene extends Scene {
-    //---------------------------------------------
-    // VARIABLES
-    //---------------------------------------------
-    
-    protected Engine engine;
-    protected Activity activity;
-    protected ResourceManager resourceManager;
-    protected VertexBufferObjectManager vbom;
-    protected Camera camera;
-    
-    //---------------------------------------------
-    // CONSTRUCTOR
-    //---------------------------------------------
-    
-    public BaseScene()
-    {
-        this.resourceManager = ResourceManager.getInstance();
-        this.engine = resourceManager.engine;
-        this.activity = resourceManager.activity;
-        this.vbom = resourceManager.vbom;
-        this.camera = resourceManager.camera;
-        createScene();
-    }
-    
-    //---------------------------------------------
-    // ABSTRACTION
-    //---------------------------------------------
-    
-    public abstract void createScene();
-    
-    public abstract void onBackKeyPressed();
-    
-    public abstract SceneType getSceneType();
-    
-    public abstract void disposeScene();
+	/*** DECLARATIONS ***/
+	/* Settings */
+	protected Engine eng;
+	protected Activity act;
+	protected ResourceManager resourceManager;
+	protected VertexBufferObjectManager vbom;
+	protected Camera cam;
+
+	/************************************
+	 * -----------CONSTRUCTOR-----------
+	 ************************************/
+	public BaseScene() {
+		this.resourceManager = ResourceManager.getInstance();
+		this.eng = resourceManager.eng;
+		this.act = resourceManager.act;
+		this.vbom = resourceManager.vbom;
+		this.cam = resourceManager.cam;
+		createScene();
+	}
+
+	/************************************
+	 * -----------ABSTRACTION-----------
+	 ************************************/
+
+	/*** createScene() ***/
+	public abstract void createScene();
+
+	/*** onBackKeyPressed() ***/
+	public abstract void onBackKeyPressed();
+
+	/*** getSceneType() ***/
+	public abstract SceneType getSceneType();
+
+	/*** disposeScene() ***/
+	public abstract void disposeScene();
 }

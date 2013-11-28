@@ -18,97 +18,102 @@ import org.andengine.entity.modifier.LoopEntityModifier;
 import org.andengine.entity.scene.background.SpriteBackground;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.input.touch.TouchEvent;
-import org.andengine.opengl.font.Font;
-import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
-import org.andengine.opengl.texture.region.TextureRegion;
 
 import android.util.Log;
 
 import com.eklypze.android.mastermdhd.SceneManager.SceneType;
 
 public class GameScene extends BaseScene {
-	/***************************
-	 * DECLARATIONS
-	 ***************************/
-	/* CAMERA */
+	/*** DECLARATIONS ***/
+	/* Settings */
 	protected static final int CAMERA_WIDTH = 480;
 	protected static final int CAMERA_HEIGHT = 800;
-	/* FONT */
-	private Font mFont;
-	private BitmapTextureAtlas mFontTexture;
-	/* RESOURCES */
-	BitmapTextureAtlas ballTexture, pegTexture;
-	BitmapTextureAtlas winTexture;
-	BitmapTextureAtlas loseTexture;
-	BitmapTextureAtlas bgTexture; // background textures
-	TextureRegion bgTextureRegion;
-	// ballTextureRegionArray: 0=red 1=blue 2=green 3=purple 4=yellow 5=orange
-	// 6=black 7=white 8="select"
-	TextureRegion[] ballTextureRegionArray = new TextureRegion[9];
-	TextureRegion[] pegTextureRegionArray = new TextureRegion[12];
-	TextureRegion[] loseTextureRegionArray = new TextureRegion[2];
-	Sprite[] panel = new Sprite[8]; // selection panel
-	Sprite bgSprite; // background sprite
-	String[] ballColours = { "Red", "Blue", "Green", "Purple", "Yellow",
-			"Orange", "Black", "White" };
-	/* GAME OPTIONS */
-	private int turn = 0; // can you be more specific? turn vs turn2
-	private int turn2 = 0; // per line turn counter
-	private int currentX = 1;
-	private int currentY = 13;
+	/* Sprites */
+	Sprite[] selectPanel = new Sprite[8];
 	Sprite boardPieces[] = new Sprite[40];
 	Sprite bwPegs[] = new Sprite[10];
-	Sprite nextSpot;
-	Sprite gameoverLose, gameoverWin; // ***will replace with scenes***
-	Boolean gameOver = false;
-	Boolean doublesAllowed = false;
+	Sprite nextSpot; // "next spot" cursor
+	Sprite gameoverLose, gameoverWin; // REPLACE with scenes
+	/* Game Options */
+	private int turn = 0;
+	private int turnCounter = 0; // per line turn counter
+	private int currentX = 1;
+	private int currentY = 13;
 	private int[] code = new int[4]; // array to store generated code
-	private int[] codeCopy = new int[4]; // for bw peg use
+	private int[] codeCopy = new int[4]; // for black&white peg use
 	private int blackPegs = 0, whitePegs = 0;
 	// remember to take currentX-1 as the array indexes
 	private int[] currentXValues = new int[4];
-	// dummy variable when drawing panel for touch *don't delete*
+	// dummy variable when drawing selectPanel for touch *don't delete*
 	private int z = 0;
+	Boolean gameOver = false;
+	Boolean doublesAllowed = false;
+
+	/************************************
+	 * ------------INHERITED------------
+	 ************************************/
 
 	@Override
+	/********************************
+	 * createScene()
+	 ********************************/
 	public void createScene() {
+		// create scene with bgSprite background
+		setBackground(new SpriteBackground(resourceManager.bgSprite));
 		// STEP 1: Start a New Game
 		newGame();
-		// create scene with bgSprite background
-		setBackground(new SpriteBackground(bgSprite));
-		// STEP 2: Draw Panel
+		// STEP 2: Draw selectPanel
 		drawPanel();
 
 	}
 
 	@Override
+	/********************************
+	 * onBackKeyPressed()
+	 ********************************/
 	public void onBackKeyPressed() {
 		System.exit(0);
 	}
 
 	@Override
+	/********************************
+	 * getSceneType()
+	 ********************************/
 	public SceneType getSceneType() {
 		return SceneType.SCENE_GAME;
 	}
 
 	@Override
+	/********************************
+	 * disposeScene()
+	 ********************************/
 	public void disposeScene() {
-		// TODO Auto-generated method stub
-
+		this.detachSelf();
+		this.dispose();
 	}
 
-	/*============================
-	 * START A NEW GAME 
-	 *===========================*/
+	/************************************
+	 * -----------GAME METHODS-----------
+	 ************************************/
+
+	/********************************
+	 * newGame()
+	 * Description: Initialize game
+	 * settings for a new session.
+	 ********************************/
 	private void newGame() {
 		/* [START] Generate New Code Combination */
 		for (int x = 0; x < 4; x++) {
 			Random r = new Random();
-			int randomNumber = r.nextInt(7 - 0) + 0; // why (7-0)+0?
+			// if doubles is not allowed check if new generated number is
+			// a double, if yes, generate another number. NOTE: doubles are
+			// defaulted to 'OFF' until feature is added.
+			int randomNumber = r.nextInt(8); // why (7-0)+0?
+			Log.v("randomR", "Number generated is " + randomNumber);
 			code[x] = randomNumber;
 			// write to log (debugging)
 			Log.v("theCode", "Number generated for " + x + " is: " + code[x]
-					+ " (" + ballColours[randomNumber] + ")");
+					+ " (" + resourceManager.ballColours[randomNumber] + ")");
 			// if doubles is not allowed check if new generated number is
 			// a double, if yes, generate another number. NOTE: doubles are
 			// defaulted to 'OFF' until feature is added.
@@ -124,18 +129,21 @@ public class GameScene extends BaseScene {
 		codeCopy = code.clone(); // copies code array for white/black peg use
 	}
 
-	/*============================
-	 * DRAW PANEL 
-	 *===========================*/
+	/********************************
+	 * drawPanel()
+	 * Description: Draw the panels
+	 * required for user selection.
+	 ********************************/
 	private void drawPanel() {
 		int column = 7; // constant?
 		int rowStart = 2;
 
-		/* [START] Draw Selection Panel */
+		/* [START] Draw Selection selectPanel */
 		for (int i = 0; i < 8; i++) {
 			final int j = i;
-			panel[i] = new Sprite(grid_xPixel(column), grid_yPixel(rowStart),
-					ballTextureRegionArray[i], vbom) {
+			selectPanel[i] = new Sprite(grid_xPixel(column),
+					grid_yPixel(rowStart),
+					resourceManager.ballTextureRegionArray[i], vbom) {
 				@Override
 				/* [START] Touch Detection */
 				public boolean onAreaTouched(TouchEvent pSceneTouchEvent,
@@ -167,20 +175,23 @@ public class GameScene extends BaseScene {
 				}
 				/* [END] Touch Detection */
 			};
-			registerTouchArea(panel[i]);
-			attachChild(panel[i]);
+			registerTouchArea(selectPanel[i]);
+			attachChild(selectPanel[i]);
 			rowStart++;
-		} /* [END] Draw Selection Panel */
+		} /* [END] Draw Selection selectPanel */
 		setTouchAreaBindingOnActionDownEnabled(true);
 	}
 
-	/*============================
-	 * MAKE MOVE (PLAYER)
-	 *===========================*/
+	/********************************
+	 * makeMove()
+	 * Description: Allow the player
+	 * to make their selection and
+	 * display pegs as a result.
+	 ********************************/
 	private void makeMove(int inColor) {
 		boardPieces[turn] = new Sprite(grid_xPixel(currentX),
-				grid_yPixelboard(currentY), ballTextureRegionArray[inColor],
-				vbom);
+				grid_yPixelBoard(currentY),
+				resourceManager.ballTextureRegionArray[inColor], vbom);
 		boardPieces[turn].setScale(0.75f); // set 75% size on board
 
 		// store current line, compare values to code and generate B/W pegs
@@ -215,7 +226,7 @@ public class GameScene extends BaseScene {
 
 			// Draw Pegs
 			drawBWPegs(blackPegs, whitePegs);
-			turn2++;
+			turnCounter++;
 
 			// Reset pegs for next line
 			blackPegs = 0;
@@ -228,7 +239,8 @@ public class GameScene extends BaseScene {
 
 		/* [START] Draw Blinking Cursor in Next Spot */
 		nextSpot = new Sprite(grid_xPixel(currentX),
-				grid_yPixelboard(currentY), ballTextureRegionArray[8], vbom);
+				grid_yPixelBoard(currentY),
+				resourceManager.ballTextureRegionArray[8], vbom);
 		nextSpot.setScale(0.75f);
 
 		nextSpot.setBlendFunction(GL10.GL_SRC_ALPHA,
@@ -237,13 +249,6 @@ public class GameScene extends BaseScene {
 				new AlphaModifier(2, 0f, 1.0f)));
 		attachChild(nextSpot);
 		/* [END] Draw Blinking Cursor in Next Spot */
-
-		// =================== UNUSED CODE ===================
-		// final Text textCenter = new Text(70, 60, this.mFont,
-		// "Hello AndEngine!\nYou can even have multilined text!",
-		// getVertexBufferObjectManager());
-		// this.scene.attachChild(textCenter);
-		// =================== UNUSED CODE ===================
 
 		/* *
 		 * GAME OVER (LOSE)
@@ -255,14 +260,18 @@ public class GameScene extends BaseScene {
 			GameOverWin(false);
 			Log.v("Game Over", "You Lose");
 			gameoverLose = new Sprite(CAMERA_WIDTH / 2 - 256,
-					CAMERA_HEIGHT / 2 - 64, loseTextureRegionArray[0], vbom);
+					CAMERA_HEIGHT / 2 - 64, resourceManager.loseTextureRegion,
+					vbom);
 			attachChild(gameoverLose);
 		}
 	}
 
-	/*============================
-	 * GAME OVER (WIN)
-	 *===========================*/
+	/********************************
+	 * GameOverWin()
+	 * Description: Display GameOver
+	 * image as a result of the user
+	 * winning the game.
+	 ********************************/
 	private void GameOverWin(boolean win) {
 		// clear game
 		detachChildren();
@@ -270,9 +279,12 @@ public class GameScene extends BaseScene {
 
 	}
 
-	/*============================
-	 * DRAW BLACK & WHITE PEGS
-	 *===========================*/
+	/********************************
+	 * drawBWPegs()
+	 * Description: Draw the black
+	 * and white pegs to the scene
+	 * based on game results.
+	 ********************************/
 	private void drawBWPegs(int numBlack, int numWhite) {
 		/* [START] if */
 		// do not display if no pegs were counted
@@ -305,34 +317,48 @@ public class GameScene extends BaseScene {
 				pegScore = 11;
 			} /* [END] if */
 			// use pegScore to display corresponding image
-			bwPegs[turn2] = new Sprite(grid_xPixel(5),
-					grid_yPixelboard(currentY + 1),
-					pegTextureRegionArray[pegScore], vbom);
-			bwPegs[turn2].setScale(0.80f);
-			attachChild(bwPegs[turn2]);
+			bwPegs[turnCounter] = new Sprite(grid_xPixel(5),
+					grid_yPixelBoard(currentY + 1),
+					resourceManager.pegTextureRegionArray[pegScore], vbom);
+			bwPegs[turnCounter].setScale(0.80f);
+			attachChild(bwPegs[turnCounter]);
 		}
 	}
 
-	/*============================
-	 * COVERT GRID-PIXEL COORDS
-	 *===========================*/
-	/* Converts grid coordinates to pixel coordinates.
-	 * Based on a 480x800 resolution screen. */
+	/********************************
+	 * ---------GRID SYSTEM---------
+	 ********************************/
+
+	/************************************
+	 * grid_xPixel()
+	 * Description: Converts grid
+	 * coordinates to pixel coordinates
+	 * based on a 480 by 800 resolution
+	 * screen. Needs to be updated.
+	 ************************************/
 	private int grid_xPixel(int x) {
 		int pixel = 0;
 		pixel = x * (CAMERA_WIDTH / 8 + 2) - 32;
 		return pixel;
 	}
 
-	// Y grid for input panel
+	/************************************
+	 * grid_yPixel()
+	 * Description: Y-grid for user
+	 * selection panel.
+	 ************************************/
 	private int grid_yPixel(int y) {
 		int pixel = 0;
 		pixel = y * (CAMERA_HEIGHT / 10) - 32;
 		return pixel;
 	}
 
-	// Y grid for game board
-	private int grid_yPixelboard(int y) {
+	/************************************
+	 * grid_yPixelBoard()
+	 * Description: Y-grid for the main
+	 * game board.
+	 ************************************/
+	private int grid_yPixelBoard(int y) {
 		int pixel = 0;
 		pixel = y * (CAMERA_HEIGHT / 15) - 32;
 		return pixel;
