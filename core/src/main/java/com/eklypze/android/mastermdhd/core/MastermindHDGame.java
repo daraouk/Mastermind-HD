@@ -25,10 +25,10 @@ public class MastermindHDGame extends Game {
     public void create() {
         batch = new SpriteBatch();
 
-        // Start with the game screen
-        setScreen(new GameScreen(this));
+        // Start with the main menu
+        setScreen(new MainMenuScreen(this));
 
-        Gdx.app.log("MastermindHD", "Game initialized - v2.0");
+        Gdx.app.log("MastermindHD", "Game initialized - v2.0 with 100 levels!");
     }
 
     @Override
