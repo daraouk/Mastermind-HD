@@ -21,6 +21,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.badlogic.gdx.math.MathUtils;
 
 /**
  * Win screen with stars and progression
@@ -48,12 +49,17 @@ public class WinScreen implements Screen {
     private Rectangle menuButton;
 
     private float time = 0;
+    private SoundManager soundManager;
+    private ParticleManager particleManager;
+    private boolean celebrationStarted = false;
 
     public WinScreen(MastermindHDGame game, Level level, int stars, int movesUsed) {
         this.game = game;
         this.level = level;
         this.stars = stars;
         this.movesUsed = movesUsed;
+        this.soundManager = SoundManager.getInstance();
+        this.particleManager = new ParticleManager();
 
         camera = new OrthographicCamera();
         viewport = new FitViewport(MastermindHDGame.GAME_WIDTH, MastermindHDGame.GAME_HEIGHT, camera);
@@ -89,11 +95,31 @@ public class WinScreen implements Screen {
     @Override
     public void show() {
         Gdx.app.log("WinScreen", "Level " + level.getLevelNumber() + " completed with " + stars + " stars!");
+        soundManager.playWin();
+        soundManager.playComplete();
     }
 
     @Override
     public void render(float delta) {
         time += delta;
+
+        // Start celebration effects
+        if (!celebrationStarted && time > 0.5f) {
+            celebrationStarted = true;
+            // Create confetti burst at center
+            particleManager.createConfetti(MastermindHDGame.GAME_WIDTH / 2f, MastermindHDGame.GAME_HEIGHT / 2f, 100);
+            particleManager.createFireworks(MastermindHDGame.GAME_WIDTH / 2f, 500);
+        }
+
+        // Continue adding sparkles periodically
+        if (time % 0.3f < delta) {
+            particleManager.createSparkle(
+                MathUtils.random(100, MastermindHDGame.GAME_WIDTH - 100),
+                MathUtils.random(200, MastermindHDGame.GAME_HEIGHT - 200)
+            );
+        }
+
+        particleManager.update(delta);
 
         Gdx.gl.glClearColor(0.1f, 0.1f, 0.15f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -163,6 +189,9 @@ public class WinScreen implements Screen {
         drawCenteredText("Retry", retryButton);
         drawCenteredText("Menu", menuButton);
 
+        // Draw particles on top
+        particleManager.render(game.batch);
+
         game.batch.end();
     }
 
@@ -179,6 +208,8 @@ public class WinScreen implements Screen {
             viewport.unproject(touchPoint);
 
             if (nextButton.contains(touchPoint.x, touchPoint.y)) {
+                soundManager.playButton();
+                soundManager.playUnlock();
                 // Go to next level (if available)
                 if (level.getLevelNumber() < 100) {
                     Level nextLevel = LevelManager.getInstance().getLevel(level.getLevelNumber() + 1);
@@ -188,10 +219,10 @@ public class WinScreen implements Screen {
                     game.setScreen(new LevelSelectScreen(game));
                 }
             } else if (retryButton.contains(touchPoint.x, touchPoint.y)) {
-                // Retry current level
+                soundManager.playButton();
                 game.setScreen(new EnhancedGameScreen(game, level));
             } else if (menuButton.contains(touchPoint.x, touchPoint.y)) {
-                // Back to level select
+                soundManager.playButton();
                 game.setScreen(new LevelSelectScreen(game));
             }
         }
@@ -218,5 +249,6 @@ public class WinScreen implements Screen {
         if (font != null) font.dispose();
         if (titleFont != null) titleFont.dispose();
         if (shapeRenderer != null) shapeRenderer.dispose();
+        if (particleManager != null) particleManager.dispose();
     }
 }

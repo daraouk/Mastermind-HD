@@ -45,9 +45,11 @@ public class MainMenuScreen implements Screen {
     private Rectangle quitButton;
 
     private float time = 0;
+    private SoundManager soundManager;
 
     public MainMenuScreen(MastermindHDGame game) {
         this.game = game;
+        this.soundManager = SoundManager.getInstance();
 
         camera = new OrthographicCamera();
         viewport = new FitViewport(MastermindHDGame.GAME_WIDTH, MastermindHDGame.GAME_HEIGHT, camera);
@@ -86,6 +88,8 @@ public class MainMenuScreen implements Screen {
     @Override
     public void show() {
         Gdx.app.log("MainMenu", "Main menu shown");
+        soundManager.loadSettings();
+        soundManager.playMusic();
     }
 
     @Override
@@ -167,12 +171,14 @@ public class MainMenuScreen implements Screen {
             viewport.unproject(touchPoint);
 
             if (playButton.contains(touchPoint.x, touchPoint.y)) {
-                // Go to level select
+                soundManager.playButton();
+                soundManager.playWhoosh();
                 game.setScreen(new LevelSelectScreen(game));
             } else if (settingsButton.contains(touchPoint.x, touchPoint.y)) {
-                // Go to settings (TODO)
-                Gdx.app.log("MainMenu", "Settings clicked");
+                soundManager.playButton();
+                game.setScreen(new SettingsScreen(game));
             } else if (quitButton.contains(touchPoint.x, touchPoint.y)) {
+                soundManager.playButton();
                 Gdx.app.exit();
             }
         }

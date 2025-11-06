@@ -44,10 +44,12 @@ public class LoseScreen implements Screen {
 
     private Rectangle retryButton;
     private Rectangle menuButton;
+    private SoundManager soundManager;
 
     public LoseScreen(MastermindHDGame game, Level level) {
         this.game = game;
         this.level = level;
+        this.soundManager = SoundManager.getInstance();
 
         camera = new OrthographicCamera();
         viewport = new FitViewport(MastermindHDGame.GAME_WIDTH, MastermindHDGame.GAME_HEIGHT, camera);
@@ -84,6 +86,7 @@ public class LoseScreen implements Screen {
     @Override
     public void show() {
         Gdx.app.log("LoseScreen", "Level " + level.getLevelNumber() + " failed");
+        soundManager.playLose();
     }
 
     @Override
@@ -157,9 +160,11 @@ public class LoseScreen implements Screen {
             viewport.unproject(touchPoint);
 
             if (retryButton.contains(touchPoint.x, touchPoint.y)) {
+                soundManager.playButton();
                 // Retry current level
                 game.setScreen(new EnhancedGameScreen(game, level));
             } else if (menuButton.contains(touchPoint.x, touchPoint.y)) {
+                soundManager.playButton();
                 // Back to level select
                 game.setScreen(new LevelSelectScreen(game));
             }

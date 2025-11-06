@@ -61,6 +61,7 @@ public class EnhancedGameScreen implements Screen {
     // State
     private float blinkTimer = 0;
     private boolean isPaused = false;
+    private SoundManager soundManager;
 
     private static final float BALL_SIZE = 64f;
     private static final float BALL_SCALE = 0.75f;
@@ -69,6 +70,7 @@ public class EnhancedGameScreen implements Screen {
         this.game = game;
         this.level = level;
         this.gameLogic = new MastermindGame(level);
+        this.soundManager = SoundManager.getInstance();
 
         camera = new OrthographicCamera();
         viewport = new FitViewport(MastermindHDGame.GAME_WIDTH, MastermindHDGame.GAME_HEIGHT, camera);
@@ -301,20 +303,25 @@ public class EnhancedGameScreen implements Screen {
             if (hintButton.contains(touchPoint.x, touchPoint.y)) {
                 int hintColor = gameLogic.useHint();
                 if (hintColor >= 0) {
+                    soundManager.playHint();
                     Gdx.app.log("GameScreen", "Hint: Color " + MastermindGame.getColorName(hintColor));
                     // Could show a visual hint here
+                } else {
+                    soundManager.playWrong();
                 }
                 return;
             }
 
             // Check pause button
             if (pauseButton.contains(touchPoint.x, touchPoint.y)) {
+                soundManager.playTap();
                 isPaused = !isPaused;
                 return;
             }
 
             // Check back button
             if (backButton.contains(touchPoint.x, touchPoint.y)) {
+                soundManager.playButton();
                 game.setScreen(new LevelSelectScreen(game));
                 return;
             }
@@ -339,6 +346,8 @@ public class EnhancedGameScreen implements Screen {
                 return;
             }
 
+            soundManager.playPlace();
+
             float x = gridToPixelX(currentPos + 1);
             float y = gridToPixelYBoard(13 - currentTurn);
 
@@ -349,7 +358,15 @@ public class EnhancedGameScreen implements Screen {
             MastermindGame.Feedback feedback = gameLogic.makeMove(colorIndex);
 
             if (feedback != null) {
+                soundManager.playComplete();
                 displayFeedback(currentTurn, feedback);
+
+                // Play feedback sound
+                if (feedback.blackPegs > 0) {
+                    soundManager.playCorrect();
+                } else if (feedback.whitePegs > 0) {
+                    soundManager.playTap();
+                }
             }
         } catch (Exception e) {
             Gdx.app.error("GameScreen", "Error handling color selection", e);

@@ -57,11 +57,13 @@ public class LevelSelectScreen implements Screen {
     private float maxScroll;
     private float lastTouchY = 0;
     private boolean isDragging = false;
+    private SoundManager soundManager;
 
     public LevelSelectScreen(MastermindHDGame game) {
         this.game = game;
         this.levelManager = LevelManager.getInstance();
         this.progress = GameProgress.getInstance();
+        this.soundManager = SoundManager.getInstance();
 
         camera = new OrthographicCamera();
         viewport = new FitViewport(MastermindHDGame.GAME_WIDTH, MastermindHDGame.GAME_HEIGHT, camera);
@@ -251,6 +253,7 @@ public class LevelSelectScreen implements Screen {
 
             // Check back button
             if (backButton.contains(touchPoint.x, touchPoint.y)) {
+                soundManager.playButton();
                 game.setScreen(new MainMenuScreen(game));
                 return;
             }
@@ -264,10 +267,14 @@ public class LevelSelectScreen implements Screen {
                         touchPoint.y >= adjustedY && touchPoint.y <= adjustedY + btn.height) {
 
                     if (progress.isLevelUnlocked(i + 1)) {
+                        soundManager.playSelect();
+                        soundManager.playWhoosh();
                         // Start the level
                         Level level = levelManager.getLevel(i + 1);
                         game.setScreen(new EnhancedGameScreen(game, level));
                         return;
+                    } else {
+                        soundManager.playWrong();
                     }
                 }
             }
