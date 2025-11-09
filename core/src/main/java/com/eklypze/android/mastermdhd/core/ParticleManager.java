@@ -185,23 +185,30 @@ public class ParticleManager {
     }
 
     /**
-     * Render all particles
+     * Render all particles using ShapeRenderer (no texture needed)
      */
-    public void render(SpriteBatch batch) {
+    public void render(SpriteBatch batch, com.badlogic.gdx.graphics.glutils.ShapeRenderer shapeRenderer) {
         if (!enabled || particles.size == 0) return;
+
+        // End batch to use ShapeRenderer
+        batch.end();
+
+        shapeRenderer.begin(com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType.Filled);
 
         for (Particle p : particles) {
             if (!p.active) continue;
 
             float alpha = p.getAlpha();
-            batch.setColor(p.color.r, p.color.g, p.color.b, alpha);
+            shapeRenderer.setColor(p.color.r, p.color.g, p.color.b, alpha);
 
-            // Draw particle as a filled circle (using a 1x1 white texture stretched)
-            // In a real implementation, you'd use a particle texture
-            batch.draw(batch.getColor(), p.x - p.size/2, p.y - p.size/2, p.size, p.size);
+            // Draw particle as filled circle
+            shapeRenderer.circle(p.x, p.y, p.size / 2, 8);
         }
 
-        batch.setColor(1, 1, 1, 1); // Reset color
+        shapeRenderer.end();
+
+        // Resume batch
+        batch.begin();
     }
 
     /**

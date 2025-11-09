@@ -189,10 +189,10 @@ public class WinScreen implements Screen {
         drawCenteredText("Retry", retryButton);
         drawCenteredText("Menu", menuButton);
 
-        // Draw particles on top
-        particleManager.render(game.batch);
-
         game.batch.end();
+
+        // Draw particles using ShapeRenderer (no texture needed)
+        particleManager.render(game.batch, shapeRenderer);
     }
 
     private void drawCenteredText(String text, Rectangle button) {
