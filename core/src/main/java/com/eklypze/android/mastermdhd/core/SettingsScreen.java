@@ -48,6 +48,7 @@ public class SettingsScreen implements Screen {
     private Rectangle musicToggle;
     private Rectangle resetButton;
     private Rectangle aboutButton;
+    private Rectangle statsButton;
     private Rectangle feedbackButton;
 
     public SettingsScreen(MastermindHDGame game) {
@@ -87,8 +88,9 @@ public class SettingsScreen implements Screen {
         soundToggle = new Rectangle(centerX, startY, buttonWidth, buttonHeight);
         musicToggle = new Rectangle(centerX, startY - spacing, buttonWidth, buttonHeight);
         aboutButton = new Rectangle(centerX, startY - spacing * 2, buttonWidth, buttonHeight);
-        feedbackButton = new Rectangle(centerX, startY - spacing * 3, buttonWidth, buttonHeight);
-        resetButton = new Rectangle(centerX, startY - spacing * 4, buttonWidth, buttonHeight);
+        statsButton = new Rectangle(centerX, startY - spacing * 3, buttonWidth, buttonHeight);
+        feedbackButton = new Rectangle(centerX, startY - spacing * 4, buttonWidth, buttonHeight);
+        resetButton = new Rectangle(centerX, startY - spacing * 5, buttonWidth, buttonHeight);
     }
 
     @Override
@@ -135,6 +137,10 @@ public class SettingsScreen implements Screen {
         shapeRenderer.setColor(0.2f, 0.5f, 0.8f, 1f);
         shapeRenderer.rect(aboutButton.x, aboutButton.y, aboutButton.width, aboutButton.height);
 
+        // Stats button
+        shapeRenderer.setColor(0.8f, 0.6f, 0.2f, 1f);
+        shapeRenderer.rect(statsButton.x, statsButton.y, statsButton.width, statsButton.height);
+
         // Feedback button
         shapeRenderer.setColor(0.5f, 0.2f, 0.8f, 1f);
         shapeRenderer.rect(feedbackButton.x, feedbackButton.y, feedbackButton.width, feedbackButton.height);
@@ -171,6 +177,7 @@ public class SettingsScreen implements Screen {
         drawCenteredText(musicText, musicToggle);
 
         drawCenteredText("About / Credits", aboutButton);
+        drawCenteredText("Statistics", statsButton);
         drawCenteredText("Send Feedback", feedbackButton);
 
         font.getData().setScale(1.8f);
@@ -216,6 +223,9 @@ public class SettingsScreen implements Screen {
             } else if (aboutButton.contains(touchPoint.x, touchPoint.y)) {
                 soundManager.playButton();
                 game.setScreen(new AboutScreen(game));
+            } else if (statsButton.contains(touchPoint.x, touchPoint.y)) {
+                soundManager.playButton();
+                game.setScreen(new StatsScreen(game));
             } else if (feedbackButton.contains(touchPoint.x, touchPoint.y)) {
                 soundManager.playButton();
                 // Open feedback (email or web form)
