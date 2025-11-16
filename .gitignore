@@ -1,0 +1,33 @@
+# Gradle
+.gradle/
+build/
+gradle-app.setting
+local.properties
+
+# Android
+*.iml
+.idea/
+*.apk
+*.ap_
+*.aab
+captures/
+*.log
+
+# Build outputs
+/android/bin/
+/android/gen/
+/android/out/
+/core/bin/
+/core/out/
+
+# Eclipse (old)
+.classpath
+.project
+.settings/
+bin/
+gen/
+libs/
+
+# OS
+.DS_Store
+Thumbs.db
